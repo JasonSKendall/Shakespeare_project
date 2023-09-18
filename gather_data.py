@@ -10,8 +10,8 @@ import urllib.request, urllib.parse, urllib.error
 # play = 'midsummer'
 # play = 'merry_wives'
 # play = 'twelfth_night'
-play = 'titus'
-play = 'allswell'
+# play = 'titus'
+# play = 'allswell'
 play = 'asyoulikeit'
 play = 'comedy_errors' # has big issues...
 play = 'cymbeline'
