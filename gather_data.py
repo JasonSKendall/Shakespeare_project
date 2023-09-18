@@ -12,8 +12,8 @@ import urllib.request, urllib.parse, urllib.error
 # play = 'twelfth_night'
 # play = 'titus'
 # play = 'allswell'
-play = 'asyoulikeit'
-play = 'comedy_errors' # has big issues...
+# play = 'asyoulikeit'
+# play = 'comedy_errors' # has big issues...
 play = 'cymbeline'
 play = 'lll'
 play = 'measure'
