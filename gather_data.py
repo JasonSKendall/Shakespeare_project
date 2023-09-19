@@ -4,47 +4,15 @@ import re
 import urllib.request, urllib.parse, urllib.error
 
 
-# play = 'othello'
-# play = 'much_ado'
-# play = 'lear'
-# play = 'midsummer'
-# play = 'merry_wives'
-# play = 'twelfth_night'
-# play = 'titus'
-# play = 'allswell'
-# play = 'asyoulikeit'
-# play = 'comedy_errors' # has big issues...
-play = 'cymbeline'
-play = 'lll'
-play = 'measure'
-play = 'merchant'
-play = 'pericles'
-play = 'taming_shrew' # has Induction, so ACT 0
-play = 'tempest'
-play = 'troilus_cressida'
-play = 'two_gentlemen'
-play = 'winters_tale'
-play = '1henryiv'
-play = '2henryiv' # hal induction, act 0
-play = 'henryv' # has prologue
-play = '1henryvi' # hal OF_charname isssues
-play = '2henryvi'
-play = '3henryvi'
-play = 'henryviii'
-play = 'john'
-play = 'richardii'
-play = 'richardiii' # many janky _of_ characters
-play = 'cleopatra'
-play = 'coriolanus'
-play = 'hamlet'
-play = 'julius_caesar'
-play = 'macbeth'
-play = 'romeo_juliet'
-play = 'timon'
+list_of_plays = [ 'othello', 'much_ado', 'lear', 'midsummer', 'merry_wives', 'twelfth_night', 'titus', 'allswell', 'asyoulikeit', 'cymbeline', 'lll', 'measure', 'merchant', 'pericles', 'taming_shrew', 'tempest', 'troilus_cressida', 'two_gentlemen', 'winters_tale', '1henryiv', '2henryiv', 'henryv', '1henryvi', '2henryvi', '3henryvi', 'henryviii', 'john', 'richardii', 'richardiii', 'cleopatra', 'coriolanus', 'hamlet', 'julius_caesar', 'macbeth', 'romeo_juliet', 'timon', 'comedy_errors' ]
 
+
+play = list_of_plays[17]
+print(play)
 
 url_to_grab = 'http://shakespeare.mit.edu/' 
 fhand = urllib.request.urlopen(url_to_grab)
+
 
 
 def get_list_of_plays():
@@ -58,29 +26,12 @@ def get_list_of_plays():
       continue
 
 
-get_list_of_plays()
+# get_list_of_plays()
 
-quit()
+# quit()
 
 
 role_fixes = { 'First_': '_1', 'Second_': '_2', 'Third_': '_3', 'Fourth_': '_4'}
-role_misspell = { 'HERNIA': 'HERMIA', \
-                 'LEAR': 'KING_LEAR', \
-                  'Gentlemen_2': 'Gentleman_2', \
-                    'BOTH': 'Both', \
-                      'A_Lord': 'Lord', \
-                        'OF_SYRACUSE': 'ANTIPHOLUS_OF_SYRACUSE', \
-                          'OF_EPHESUS': 'ANTIPHOLUS_OF_EPHESUS', \
-                            'Posthumus_Leonatus' : 'POSTHUMUS_LEONATUS' , \
-                              'POMPHEY' : 'POMPEY' ,\
-                              'SU_FFOLK' : 'SUFFOLK' ,\
-                              'Murder_1' : 'Murderer_1', \
-                              'murderer_2' : 'Murderer_2' , \
-                              'GUILDENSTERN:' : 'GUILDENSTERN' , \
-                              'ROSENCRANTZ:' : 'ROSENCRANTZ' , \
-                              'Nurse' : 'NURSE' , \
-                              'Senator__1' : 'Senator_1'
-}
 
 list_of_excluded_roles = [ 'Here_stand_I' , # LLL \
                           'As_long_as_you_or_I' , # M4M \
@@ -93,16 +44,20 @@ list_of_roles = []
 
 Divider_act = "H3>ACT "
 Divider_scene = "h3>SCENE "
-Divider_scene_bad_format = "<b>Scene " # found in Cymbeline II.III
+Divider_scene_prologue = "h3>PROLOGUE" 
 Divider_role = "NAME=speech"
 
 url_to_grab = 'http://shakespeare.mit.edu/' + play + '/full.html'
 fhand = urllib.request.urlopen(url_to_grab)
 
+# play = 'comedy_errors'
+fhand = open('/Users/jasonkendall/Desktop/shakespeare/' + play + '/full.html')
+
 
 def read_in_play_data():
   for rawline in fhand:
-    j = rawline.decode().rstrip()
+    # j = rawline.decode().rstrip()
+    j = rawline.rstrip()
     isact = j.find(Divider_act)
     if isact != -1:
       theact = re.split('[<> ]',j)[3]
@@ -114,11 +69,11 @@ def read_in_play_data():
       list_of_scenes.append(act_and_scene)
       continue
 
-    isscene_bad_format = j.find(Divider_scene_bad_format)
-    if isscene_bad_format != -1:
-      thescene = re.split('[<>]',(re.split(Divider_scene_bad_format,j)[1]))[0]
-      act_and_scene = theact + '.' + thescene
+    isscene_prologue = j.find(Divider_scene_prologue)
+    if isscene_prologue != -1:
+      act_and_scene = theact + '.Prologue'  
       list_of_scenes.append(act_and_scene)
+      print(act_and_scene)
       continue
 
     isrole = j.find(Divider_role) 
@@ -145,9 +100,6 @@ def fix_role_name(i):
   for j in role_fixes.keys():
     if i.find(j, 0, ) != -1:
       i = i.replace(j, '') + role_fixes[j]
-  for j in role_misspell.keys():
-    if i == j:
-      i = i.replace(j, '') + role_misspell[j]
   return i
 
 
