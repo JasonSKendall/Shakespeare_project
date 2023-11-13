@@ -5,13 +5,14 @@ import csv
 import urllib.request, urllib.parse, urllib.error
 
 class Breakdown:
-  def __init__(self, play=None, loc='web', list_of_scenes=[], list_of_roles = [], casting={}, breakdown={}) -> None:
+  def __init__(self, play=None, loc='web', list_of_scenes=[], list_of_roles = [], casting={}, breakdown={}, bd_full_list=[]) -> None:
     self.play = play
     self.loc = loc
     self.list_of_scenes = list_of_scenes
     self.list_of_roles = list_of_roles
     self.casting = casting
     self.breakdown = breakdown
+    self.bd_full_list = bd_full_list
 
   def dict_of_plays(): 
     current_dict = { 'othello': "Othello",
@@ -117,46 +118,39 @@ class Breakdown:
           self.casting[key_role] = 1
 
   def create_breakdown_list(self):
-    bd_full_list = []
+    self.read_in_play_data()
     cur_role = []
     self.create_list_of_scenes_per_role()
     cur_role.append( "Role")
     for i in self.list_of_scenes:
       cur_role.append(i)
-    bd_full_list.append(cur_role)
+    self.bd_full_list.append(cur_role)
     cur_role = []
     for key in sorted(self.breakdown.keys()):
       cur_role.append(key)
       for i in self.breakdown[key]:
         cur_role.append(str(i))
-      bd_full_list.append(cur_role)
+      self.bd_full_list.append(cur_role)
       cur_role = []
-    return(bd_full_list)
 
   def print_out_breakdown(self):
-    self.read_in_play_data()
-    this_play_bd = self.create_breakdown_list()
-    for i in this_play_bd:
+    for i in self.bd_full_list:
       print(i)
 
 
   def print_out_breakdown_csv(self):
-    self.read_in_play_data()
-    this_play_bd = self.create_breakdown_list()
     with open( self.play + '.csv' , 'w', newline='') as file:
       writer = csv.writer(file)
-      writer.writerows(this_play_bd)
+      writer.writerows(self.bd_full_list)
 
 
   def print_out_breakdown_html(self):
-    self.read_in_play_data()
-    this_play_bd = self.create_breakdown_list()
     html_filename = self.play + '.html'
     with open(html_filename , 'w', newline='') as writer:
-      colspan = str(len(this_play_bd[0]))
+      colspan = str(len(self.bd_full_list[0]))
       curline = '<table cellpadding="5" border="1" bgcolor="white"><TH colspan="' + colspan + '">Casting Breakdown</TH>\n'
       writer.write(curline)
-      for i in this_play_bd:
+      for i in self.bd_full_list:
         curline = f"<TR><TD>{'</TD><TD>'.join(i)}</TD></TR>\n"
         writer.write(curline)
       writer.write('</table>')
@@ -166,6 +160,7 @@ class Breakdown:
 
 
 p1 = Breakdown("midsummer")
-#p1.print_out_breakdown()
-p1.print_out_breakdown_html()
+p1.create_breakdown_list()
+p1.print_out_breakdown()
+#p1.print_out_breakdown_html()
 #p1.print_out_breakdown_csv()
