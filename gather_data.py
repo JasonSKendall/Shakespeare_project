@@ -4,20 +4,52 @@ import re
 import urllib.request, urllib.parse, urllib.error
 
 class Breakdown:
-  def __init__(self, play='othello', list_of_scenes=[], list_of_roles = [], casting={}, breakdown={}) -> None:
+  def __init__(self, play=None, list_of_scenes=[], list_of_roles = [], casting={}, breakdown={}) -> None:
     self.play = play
     self.list_of_scenes = list_of_scenes
     self.list_of_roles = list_of_roles
     self.casting = casting
     self.breakdown = breakdown
 
-  def list_of_plays(): 
-    current_list = [ 'othello', 'much_ado', 'lear', 'midsummer', 'merry_wives', 'twelfth_night', 'titus',
-                 'allswell', 'asyoulikeit', 'cymbeline', 'lll', 'measure', 'merchant', 'pericles', 'taming_shrew',
-                 'tempest', 'troilus_cressida', 'two_gentlemen', 'winters_tale', '1henryiv', '2henryiv', 'henryv',
-                 '1henryvi', '2henryvi', '3henryvi', 'henryviii', 'john', 'richardii', 'richardiii', 'cleopatra',
-                 'coriolanus', 'hamlet', 'julius_caesar', 'macbeth', 'romeo_juliet', 'timon', 'comedy_errors' ] 
-    return(current_list)
+  def dict_of_plays(): 
+    current_dict = { 'othello': "Othello",
+                    'much_ado': "Much Ado About Nothing",
+                    'lear': "King Lear",
+                    'midsummer': "A Midsummer Night's Dream",
+                    'merry_wives' : "The Merry Wives of Windsor",
+                    'twelfth_night': "Twelfth Night",
+                    'titus': "Titus Andronicus",
+                    'allswell' : "All's Well That Ends Well",
+                    'asyoulikeit': "As You Like It",
+                    'cymbeline': "Cymbeline",
+                    'lll': "Love's Labours Lost",
+                    'measure': "Measure for Measure",
+                    'merchant': "The Merchant of Venice",
+                    'pericles': "Pericles, Prince of Tyre",
+                    'taming_shrew': "Taming of the Shrew",
+                    'tempest': "The Tempest",
+                    'troilus_cressida': "Troilus and Cressida",
+                    'two_gentlemen': "The Two Gentlemen of Verona",
+                    'winters_tale': "The Winter's Tale",
+                    '1henryiv' : "King Henry the IV, Part 1",
+                    '2henryiv' : "King Henry the IV, Part 2",
+                    'henryv' : "King Henry the V",
+                    '1henryvi' : "King Henry the VI, Part 1",
+                    '2henryvi' : "King Henry the VI, Part 2",
+                    '3henryvi' : "King Henry the VI, Part 3",
+                    'henryviii' : "King Henry the VIII",
+                    'john' : "King John",
+                    'richardii' : "King Richard II",
+                    'richardiii': "King Richard the III",
+                    'cleopatra': "Cleopatra",
+                    'coriolanus': "Coriolanus",
+                    'hamlet': "Hamlet",
+                    'julius_caesar': "Julius Caesar",
+                    'macbeth' : "Macbeth",
+                    'romeo_juliet': "Romeo and Juliet",
+                    'timon': "Timon of Athens",
+                    'comedy_errors': "The Comedy of Errors" } 
+    return(current_dict)
 
   def create_list_of_scenes_per_role(self):
     for i in self.list_of_roles:
@@ -38,22 +70,44 @@ class Breakdown:
     for key in sorted(p1.breakdown.keys()):
       print(key, ' : ' , self.breakdown[key] )
 
-p1 = Breakdown()
+  def print_out_breakdown_html(self):
+    self.create_list_of_scenes_per_role()
+    colspan = str(len(self.create_list_of_scenes_per_role()) + 1)
+    curline = '<table cellpadding="5" border="1" bgcolor="white">'
+    print(curline)
+    curline = '<TH colspan="' + colspan + '">Casting Breakdown</TH>'
+    print(curline)
+    curline = "<TR><TD>Role</TD>"
+    for i in self.list_of_scenes:
+      i = '<TD>' + i + '</TD>'
+      curline += i
+    curline += '</TR>'
+    print(curline)
 
-location_of_source = 'mac'
-play = p1.play
+    for key in sorted(p1.breakdown.keys()):
+      curline = "<TR><TD>" + key + "</TD>"
+      for i in self.breakdown[key]:
+        curline += '<TD>' + str(i) + '</TD>'
+      curline += '</TR>'
+      print(curline)
+    
+    print('</table>')
 
 def choose_play(loc, play):
   if play == None:
     play = p1.play
   print(play)
   if loc == 'web':
-    url_to_grab = 'http://shakespeare.mit.edu/' + play + '/full.html'
+    # url_to_grab = 'http://shakespeare.mit.edu/' + play + '/full.html'
+    url_to_grab = 'http://www.jasonkendall.com/shakespeare_plays/' + play + '.html'
+
     return urllib.request.urlopen(url_to_grab)
   else:
-    return open('/Users/jasonkendall/Desktop/shakespeare/' + play + '/full.html')
+    return open('/Users/jasonkendall/Desktop/shakespeare/' + play + '/full.html', mode='r')
 
-def read_in_play_data():
+def read_in_play_data(loc, play):
+
+  fhand = choose_play(loc, play)
 
   theact = 'Induction'
   thescene = 'Prologue'
@@ -98,7 +152,7 @@ def read_in_play_data():
         p1.casting[key_role] = 1
 
 def fix_role_name(i):
-  role_fixes = { 'First_': '_1', 'Second_': '_2', 'Third_': '_3', 'Fourth_': '_4'}
+  role_fixes = { 'First_': '_1', 'Second_': '_2', 'Third_': '_3', 'Fourth_': '_4' , 'Fifth_': '_5' , 'Sixth_': '_6' , 'Seventh_': '_7' }
   for j in role_fixes.keys():
     if i.find(j, 0, ) != -1:
       i = i.replace(j, '') + role_fixes[j]
@@ -107,25 +161,15 @@ def fix_role_name(i):
 
 
 
+
+p1 = Breakdown()
+# play = p1.play
   
-
-fhand = choose_play(location_of_source, play)
-
-
-#read_in_play_data()
-#p1.print_out_breakdown()
+play = "midsummer"
+#location_of_source = 'mac'
+location_of_source = 'web'
 
 
-def accum(s):
-  x = set(s.lower())
-  counter = 0
-  for i in x:
-    if s.lower().count(i) > 1:
-      counter += 1
-  print(s, x , counter)
+read_in_play_data(location_of_source, play)
+p1.print_out_breakdown_html()
 
-
-
-accum("abcAdcc") #-> "A-Bb-Ccc-Dddd"
-accum("RqaEzteyyy") #-> "R-Qq-Aaa-Eeee-Zzzzz-Tttttt-Yyyyyyy"
-accum("cwAt") #-> "C-Ww-Aaa-Tttt"
