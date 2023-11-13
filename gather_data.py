@@ -1,10 +1,11 @@
 #!python
 
 import re
+import csv
 import urllib.request, urllib.parse, urllib.error
 
 class Breakdown:
-  def __init__(self, play=None, loc=None, list_of_scenes=[], list_of_roles = [], casting={}, breakdown={}) -> None:
+  def __init__(self, play=None, loc='web', list_of_scenes=[], list_of_roles = [], casting={}, breakdown={}) -> None:
     self.play = play
     self.loc = loc
     self.list_of_scenes = list_of_scenes
@@ -65,26 +66,21 @@ class Breakdown:
       self.breakdown[i] = scenelist
     return (self.breakdown)
 
-  def print_out_breakdown(self):
-    self.create_list_of_scenes_per_role()
-    print('Role' , ' : ' ,self.list_of_scenes)
-    for key in sorted(self.breakdown.keys()):
-      print(key, ' : ' , self.breakdown[key] )
 
   def choose_play(self):
-    if self.loc == 'web':
+    if self.loc == 'mac':
+      return open('/Users/jasonkendall/Desktop/shakespeare/' + self.play + '/full.html', mode='r')
+    else:
       # url_to_grab = 'http://shakespeare.mit.edu/' + play + '/full.html'
       url_to_grab = 'http://www.jasonkendall.com/shakespeare_plays/' + self.play + '.html'
       return urllib.request.urlopen(url_to_grab)
-    else:
-      return open('/Users/jasonkendall/Desktop/shakespeare/' + self.play + '/full.html', mode='r')
 
 
   def fix_role_name(self, rolename=None):
     self.rolename = rolename
     role_fixes = { 'First_': '_1', 'Second_': '_2', 'Third_': '_3', 'Fourth_': '_4' , 'Fifth_': '_5' , 'Sixth_': '_6' , 'Seventh_': '_7' }
     for j in role_fixes.keys():
-      if rolename.find(j, 0, ) != -1:
+      if j in rolename:
         rolename = rolename.replace(j, '') + role_fixes[j]
     return rolename
 
@@ -95,31 +91,23 @@ class Breakdown:
     thescene = 'Prologue'
     for rawline in fhand:
       if self.loc == 'web':
-        j = rawline.decode().rstrip()
+        current_line = rawline.decode().rstrip()
       else:
-        j = rawline.rstrip()
-      Divider_act = "H3>ACT "
-      isact = j.find(Divider_act)
-      if isact != -1:
-        theact = re.split('[<> ]',j)[3]
+        current_line = rawline.rstrip()
+      if "<H3>ACT " in current_line:
+        theact = re.split('[<> ]',current_line)[3]
         continue
-      Divider_scene = "h3>SCENE "
-      isscene = j.find(Divider_scene)
-      if isscene != -1:
-        thescene= re.split('[<> \.]',j)[3]
+      if "<h3>SCENE " in current_line:
+        thescene= re.split('[<> \.]',current_line)[3]
         act_and_scene = theact + '.' + thescene
         self.list_of_scenes.append(act_and_scene)
         continue
-      Divider_scene_prologue = "h3>PROLOGUE" 
-      isscene_prologue = j.find(Divider_scene_prologue)
-      if isscene_prologue != -1:
+      if "<h3>PROLOGUE" in current_line:
         act_and_scene = theact + '.Prologue'  
         self.list_of_scenes.append(act_and_scene)
         continue
-      Divider_role = "NAME=speech"
-      isrole = j.find(Divider_role) 
-      if isrole != -1: 
-        role = self.fix_role_name(  re.sub( ' ' , '_' ,   re.split('[\<|\>]', j)[4]  ) )
+      if "NAME=speech" in current_line:
+        role = self.fix_role_name(  re.sub( ' ' , '_' ,   re.split('[\<|\>]', current_line)[4]  ) )
         if role not in self.list_of_roles:
           self.list_of_roles.append(role)
         key_role = (role, act_and_scene)
@@ -128,33 +116,56 @@ class Breakdown:
         else:
           self.casting[key_role] = 1
 
-  def print_out_breakdown_html(self):
+  def create_breakdown_list(self):
+    bd_full_list = []
+    cur_role = []
     self.create_list_of_scenes_per_role()
-    colspan = str(len(self.create_list_of_scenes_per_role()) + 1)
-    curline = '<table cellpadding="5" border="1" bgcolor="white">'
-    print(curline)
-    curline = '<TH colspan="' + colspan + '">Casting Breakdown</TH>'
-    print(curline)
-    curline = "<TR><TD>Role</TD>"
+    cur_role.append( "Role")
     for i in self.list_of_scenes:
-      i = '<TD>' + i + '</TD>'
-      curline += i
-    curline += '</TR>'
-    print(curline)
+      cur_role.append(i)
+    bd_full_list.append(cur_role)
+    cur_role = []
     for key in sorted(self.breakdown.keys()):
-      curline = "<TR><TD>" + key + "</TD>"
+      cur_role.append(key)
       for i in self.breakdown[key]:
-        curline += '<TD>' + str(i) + '</TD>'
-      curline += '</TR>'
-      print(curline)
-    print('</table>')
+        cur_role.append(str(i))
+      bd_full_list.append(cur_role)
+      cur_role = []
+    return(bd_full_list)
+
+  def print_out_breakdown(self):
+    self.read_in_play_data()
+    this_play_bd = self.create_breakdown_list()
+    for i in this_play_bd:
+      print(i)
+
+
+  def print_out_breakdown_csv(self):
+    self.read_in_play_data()
+    this_play_bd = self.create_breakdown_list()
+    with open( self.play + '.csv' , 'w', newline='') as file:
+      writer = csv.writer(file)
+      writer.writerows(this_play_bd)
+
+
+  def print_out_breakdown_html(self):
+    self.read_in_play_data()
+    this_play_bd = self.create_breakdown_list()
+    html_filename = self.play + '.html'
+    with open(html_filename , 'w', newline='') as writer:
+      colspan = str(len(this_play_bd[0]))
+      curline = '<table cellpadding="5" border="1" bgcolor="white"><TH colspan="' + colspan + '">Casting Breakdown</TH>\n'
+      writer.write(curline)
+      for i in this_play_bd:
+        curline = f"<TR><TD>{'</TD><TD>'.join(i)}</TD></TR>\n"
+        writer.write(curline)
+      writer.write('</table>')
 
 
 
 
 
-
-
-p1 = Breakdown("midsummer", "web")
-p1.read_in_play_data()
+p1 = Breakdown("midsummer")
+p1.print_out_breakdown()
 p1.print_out_breakdown_html()
+p1.print_out_breakdown_csv()
