@@ -8,14 +8,17 @@ import ftplib
 
 
 class Breakdown:
-  def __init__(self, play=None, loc='web', list_of_scenes=[], list_of_roles = [], casting={}, breakdown={}, bd_full_list=[]) -> None:
+  def __init__(self,
+               play=None,
+               loc='web',
+               bd_full_list=[] ,
+               full_mega_breakdown={},
+               list_of_scenes=[]) -> None:
     self.play = play
     self.loc = loc
-    self.list_of_scenes = list_of_scenes
-    self.list_of_roles = list_of_roles
-    self.casting = casting
-    self.breakdown = breakdown
     self.bd_full_list = bd_full_list
+    self.full_mega_breakdown = full_mega_breakdown
+    self.list_of_scenes = list_of_scenes
 
   def dict_of_plays(): 
     current_dict = { 'othello': "Othello",
@@ -57,20 +60,6 @@ class Breakdown:
                     'comedy_errors': "The Comedy of Errors" } 
     return(current_dict)
 
-  def create_list_of_scenes_per_role(self):
-    for i in self.list_of_roles:
-      scenelist = []
-      for j in self.list_of_scenes:
-        key = (i,j)
-        if key in self.casting:
-          speech_counts = self.casting[key]
-        else:
-          speech_counts = 0
-        scenelist.append(speech_counts)
-      self.breakdown[i] = scenelist
-    return (self.breakdown)
-
-
 
 
   def get_list_of_plays_sftp(self):
@@ -109,9 +98,6 @@ class Breakdown:
 
 
 
-
-
-
   def choose_play(self):
     if self.loc == 'mac':
       return open('/Users/jasonkendall/Desktop/shakespeare/' + self.play + '/full.html', mode='r')
@@ -121,6 +107,8 @@ class Breakdown:
       return urllib.request.urlopen(url_to_grab)
 
 
+
+
   def fix_role_name(self, rolename=None):
     self.rolename = rolename
     role_fixes = { 'First_': '_1', 'Second_': '_2', 'Third_': '_3', 'Fourth_': '_4' , 'Fifth_': '_5' , 'Sixth_': '_6' , 'Seventh_': '_7' }
@@ -128,6 +116,9 @@ class Breakdown:
       if j in rolename:
         rolename = rolename.replace(j, '') + role_fixes[j]
     return rolename
+
+
+
 
   
   def read_in_play_data(self):
@@ -153,29 +144,32 @@ class Breakdown:
         continue
       if "NAME=speech" in current_line:
         role = self.fix_role_name(  re.sub( ' ' , '_' ,   re.split('[\<|\>]', current_line)[4]  ) )
-        if role not in self.list_of_roles:
-          self.list_of_roles.append(role)
-        key_role = (role, act_and_scene)
-        if key_role in self.casting:
-          self.casting[key_role] += 1
-        else:
-          self.casting[key_role] = 1
+        if role not in self.full_mega_breakdown.keys():
+          self.full_mega_breakdown[role] = dict()
+        if act_and_scene not in self.full_mega_breakdown[role].keys():
+          self.full_mega_breakdown[role][act_and_scene] = 0
+        self.full_mega_breakdown[role][act_and_scene] += 1
+    for role in self.full_mega_breakdown.keys():
+      for act_and_scene in self.list_of_scenes:
+        if act_and_scene not in self.full_mega_breakdown[role].keys():
+          self.full_mega_breakdown[role][act_and_scene] = 0
 
-  def create_breakdown_list(self):
+
+  def create_breakdown_list_new_way(self):
     self.read_in_play_data()
-    cur_role = []
-    self.create_list_of_scenes_per_role()
-    cur_role.append( "Role")
-    for i in self.list_of_scenes:
-      cur_role.append(i)
-    self.bd_full_list.append(cur_role)
-    cur_role = []
-    for key in sorted(self.breakdown.keys()):
-      cur_role.append(key)
-      for i in self.breakdown[key]:
-        cur_role.append(str(i))
+    top_row = ['ROLE'] + self.list_of_scenes
+    self.bd_full_list.append(top_row)
+    for role in sorted( self.full_mega_breakdown.keys()):
+      cur_role = [ role ]
+      for szene in self.list_of_scenes:
+        if szene in self.full_mega_breakdown[role].keys():
+          count = str( self.full_mega_breakdown[role][szene] )
+          cur_role.append(count)
+        else:
+          cur_role.append('0')
       self.bd_full_list.append(cur_role)
       cur_role = []
+
 
   def print_out_breakdown(self):
     for i in self.bd_full_list:
@@ -205,7 +199,7 @@ class Breakdown:
 
 p1 = Breakdown("midsummer")
 #p1.get_list_of_plays()
-p1.create_breakdown_list()
+p1.create_breakdown_list_new_way()
 #p1.print_out_breakdown()
-p1.print_out_breakdown_html()
+#p1.print_out_breakdown_html()
 p1.print_out_breakdown_csv()
