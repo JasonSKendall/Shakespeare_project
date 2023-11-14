@@ -155,15 +155,15 @@ class Breakdown:
     top_row = ['ROLE'] + self.list_of_scenes
     self.bd_full_list.append(top_row)
     for role in sorted( breakdown_dict.keys()):
-      cur_role = [ role ]
-      for szene in self.list_of_scenes:
-        if szene in breakdown_dict[role].keys():
-          count = str( breakdown_dict[role][szene] )
-          cur_role.append(count)
+      current_role_list = [ role ]
+      for current_scene in self.list_of_scenes:
+        if current_scene in breakdown_dict[role].keys():
+          count = str( breakdown_dict[role][current_scene] )
+          current_role_list.append(count)
         else:
-          cur_role.append('0')
-      self.bd_full_list.append(cur_role)
-      cur_role = []
+          current_role_list.append('0')
+      self.bd_full_list.append(current_role_list)
+      current_role_list = []
 
 
 
