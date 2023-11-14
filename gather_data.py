@@ -3,6 +3,9 @@
 import re
 import csv
 import urllib.request, urllib.parse, urllib.error
+import pysftp
+import ftplib
+
 
 class Breakdown:
   def __init__(self, play=None, loc='web', list_of_scenes=[], list_of_roles = [], casting={}, breakdown={}, bd_full_list=[]) -> None:
@@ -66,6 +69,47 @@ class Breakdown:
         scenelist.append(speech_counts)
       self.breakdown[i] = scenelist
     return (self.breakdown)
+
+
+
+
+  def get_list_of_plays_sftp(self):
+    myHostname = "XXXX"
+    myUsername = "XXXXX"
+    myPassword = "XXXXX"
+    myDir = '/htdocs/shakespeare_plays/'
+    try:
+      with pysftp.Connection(host=myHostname, username=myUsername, password=myPassword) as sftp:
+        print("Connection succesfully stablished ... ")
+        sftp.cwd(myDir)
+        directory_structure = sftp.listdir_attr()
+        for attr in directory_structure:
+          print(attr.filename, attr)
+    except:
+      print('cant connect')
+
+
+
+  def get_list_of_plays(self):
+    myHostname = "XXXXX"
+    myUsername = "XXXXX"
+    myPassword = "XXXXXX"
+    myDir = '/htdocs/shakespeare_plays/'
+    try:
+      ftp = ftplib.FTP(myHostname)
+      ftp.login(myUsername, myPassword)
+      ftp.cwd(myDir)
+      data = []
+      ftp.dir(data.append)
+      ftp.quit()
+      for line in data:
+        print("-", line)
+    except:
+      print("cant log in")
+
+
+
+
 
 
   def choose_play(self):
@@ -160,7 +204,8 @@ class Breakdown:
 
 
 p1 = Breakdown("midsummer")
+#p1.get_list_of_plays()
 p1.create_breakdown_list()
-p1.print_out_breakdown()
-#p1.print_out_breakdown_html()
-#p1.print_out_breakdown_csv()
+#p1.print_out_breakdown()
+p1.print_out_breakdown_html()
+p1.print_out_breakdown_csv()
