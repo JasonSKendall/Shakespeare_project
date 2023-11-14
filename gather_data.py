@@ -12,12 +12,10 @@ class Breakdown:
                play=None,
                loc='web',
                bd_full_list=[] ,
-               full_mega_breakdown={},
                list_of_scenes=[]) -> None:
     self.play = play
     self.loc = loc
     self.bd_full_list = bd_full_list
-    self.full_mega_breakdown = full_mega_breakdown
     self.list_of_scenes = list_of_scenes
 
   def dict_of_plays(): 
@@ -123,6 +121,7 @@ class Breakdown:
   
   def read_in_play_data(self):
     fhand = self.choose_play()
+    breakdown_dict = dict()
     theact = 'Induction'
     thescene = 'Prologue'
     for rawline in fhand:
@@ -144,32 +143,32 @@ class Breakdown:
         continue
       if "NAME=speech" in current_line:
         role = self.fix_role_name(  re.sub( ' ' , '_' ,   re.split('[\<|\>]', current_line)[4]  ) )
-        if role not in self.full_mega_breakdown.keys():
-          self.full_mega_breakdown[role] = dict()
-        if act_and_scene not in self.full_mega_breakdown[role].keys():
-          self.full_mega_breakdown[role][act_and_scene] = 0
-        self.full_mega_breakdown[role][act_and_scene] += 1
-    for role in self.full_mega_breakdown.keys():
+        if role not in breakdown_dict.keys():
+          breakdown_dict[role] = dict()
+        if act_and_scene not in breakdown_dict[role].keys():
+          breakdown_dict[role][act_and_scene] = 0
+        breakdown_dict[role][act_and_scene] += 1
+    for role in breakdown_dict.keys():
       for act_and_scene in self.list_of_scenes:
-        if act_and_scene not in self.full_mega_breakdown[role].keys():
-          self.full_mega_breakdown[role][act_and_scene] = 0
-
-
-  def create_breakdown_list_new_way(self):
-    self.read_in_play_data()
+        if act_and_scene not in breakdown_dict[role].keys():
+          breakdown_dict[role][act_and_scene] = 0
     top_row = ['ROLE'] + self.list_of_scenes
     self.bd_full_list.append(top_row)
-    for role in sorted( self.full_mega_breakdown.keys()):
+    for role in sorted( breakdown_dict.keys()):
       cur_role = [ role ]
       for szene in self.list_of_scenes:
-        if szene in self.full_mega_breakdown[role].keys():
-          count = str( self.full_mega_breakdown[role][szene] )
+        if szene in breakdown_dict[role].keys():
+          count = str( breakdown_dict[role][szene] )
           cur_role.append(count)
         else:
           cur_role.append('0')
       self.bd_full_list.append(cur_role)
       cur_role = []
 
+
+
+  def create_breakdown_list_new_way(self):
+    self.read_in_play_data()
 
   def print_out_breakdown(self):
     for i in self.bd_full_list:
@@ -192,6 +191,7 @@ class Breakdown:
         curline = f"<TR><TD>{'</TD><TD>'.join(i)}</TD></TR>\n"
         writer.write(curline)
       writer.write('</table>')
+
 
 
 
