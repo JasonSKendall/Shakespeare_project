@@ -109,7 +109,13 @@ class Breakdown:
 
   def fix_role_name(self, rolename=None):
     self.rolename = rolename
-    role_fixes = { 'First_': '_1', 'Second_': '_2', 'Third_': '_3', 'Fourth_': '_4' , 'Fifth_': '_5' , 'Sixth_': '_6' , 'Seventh_': '_7' }
+    role_fixes = { 'First_': '_1',
+                  'Second_': '_2',
+                  'Third_': '_3',
+                  'Fourth_': '_4',
+                  'Fifth_': '_5',
+                  'Sixth_': '_6',
+                  'Seventh_': '_7' }
     for j in role_fixes.keys():
       if j in rolename:
         rolename = rolename.replace(j, '') + role_fixes[j]
